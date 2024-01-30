@@ -1050,6 +1050,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     """
     filesystem = fsspec.open(save_dir).fs
     latest_dir = get_latest_subdir_path(save_dir)
+    s3_zip_prefix = "zip:///::s3://"
     hrv_files = list(
         filesystem.glob(f"{latest_dir}/{'15_' if using_backup else ''}hrv_2*.zarr.zip")
     )
@@ -1059,7 +1060,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     filename = f"{latest_dir}/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
     filename_temp = f"{latest_dir}/hrv_tmp_{secrets.token_hex(6)}.zarr.zip"
     log.debug(f"Collating HRV files {filename}")
-    hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
+    hrv_files = [s3_zip_prefix + str(f) for f in hrv_files]
     log.debug(hrv_files)
     dataset = (
         xr.open_mfdataset(
@@ -1096,7 +1097,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     nonhrv_files = list(
         filesystem.glob(f"{latest_dir}/{'15_' if using_backup else ''}2*.zarr.zip")
     )
-    nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
+    nonhrv_files = [s3_zip_prefix + str(f) for f in nonhrv_files]
     log.debug(nonhrv_files)
     o_dataset = (
         xr.open_mfdataset(
